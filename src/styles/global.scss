@@ -1,0 +1,27 @@
+// Global Styles
+// Reset some default browser styles
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+  font-family: "Roboto", sans-serif; // You can change this to your preferred font
+}
+
+// Set body background and text color
+body {
+  background-color: #0000;
+  color: #fff; // Default text color
+  line-height: 1.6; // Improve readability
+}
+
+.container {
+  background-color: #0000;
+  border: solid 100px #0000 !important;
+}
+
+// Add any additional global styles here
