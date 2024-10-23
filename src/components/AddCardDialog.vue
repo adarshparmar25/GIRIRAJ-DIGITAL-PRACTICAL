@@ -97,7 +97,7 @@ export default defineComponent({
   emits: ["close", "addCard"],
   setup(props, { emit }) {
     const isValid = ref(false);
-    const form = ref({
+    const defaultFormState = {
       cardHolder: "",
       bankName: "",
       cardType: "",
@@ -106,7 +106,8 @@ export default defineComponent({
       cvv: "",
       setAsDefault: false,
       addToGPay: false,
-    });
+    };
+    const form = ref({ ...defaultFormState });
 
     const localDialogOpen = ref(props.isDialogOpen);
 
@@ -117,7 +118,12 @@ export default defineComponent({
       }
     );
 
+    const resetForm = () => {
+      form.value = { ...defaultFormState };
+    };
+
     const closeDialog = () => {
+      resetForm();
       emit("close");
     };
 
