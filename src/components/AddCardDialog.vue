@@ -10,6 +10,10 @@
           <v-text-field
             v-model="form.cardHolder"
             label="Card Holder Name"
+            :rules="[
+              (v) => !!v || 'Card Holder Name is required',
+              (v) => v.length <= 35 || 'Max 35 characters',
+            ]"
             required
             maxlength="35"
           ></v-text-field>
@@ -17,6 +21,7 @@
           <v-text-field
             v-model="form.bankName"
             label="Bank Name"
+            :rules="[(v) => !!v || 'Bank Name is required']"
             required
           ></v-text-field>
 
@@ -24,6 +29,7 @@
             v-model="form.cardType"
             :items="['Credit', 'Debit']"
             label="Card Type"
+            :rules="[(v) => !!v || 'Card Type is required']"
             required
           ></v-select>
 
@@ -35,6 +41,10 @@
             maxlength="16"
             counter="16"
             hint="Enter a valid 16-digit card number"
+            :rules="[
+              (v) => !!v || 'Card Number is required',
+              (v) => /^\d{16}$/.test(v) || 'Invalid card number',
+            ]"
           ></v-text-field>
 
           <v-text-field
@@ -42,6 +52,10 @@
             label="Valid Till (MM/YYYY)"
             required
             hint="e.g., 12/24"
+            :rules="[
+              (v) => !!v || 'Expiry date is required',
+              (v) => validateExpiryDate(v) || 'Invalid expiry date',
+            ]"
           ></v-text-field>
 
           <v-text-field
@@ -51,6 +65,10 @@
             maxlength="3"
             required
             hint="3-digit code"
+            :rules="[
+              (v) => !!v || 'CVV is required',
+              (v) => /^\d{3}$/.test(v) || 'Invalid CVV',
+            ]"
           ></v-text-field>
 
           <div class="d-flex justify-space-between">
@@ -131,32 +149,15 @@ export default defineComponent({
       return Math.random().toString(36).substr(2, 9);
     };
 
-    const validateCardDetails = () => {
-      const cardNumberPattern = /^\d{16}$/;
-      if (!cardNumberPattern.test(form.value.cardNumber)) {
-        toast.error("Please enter a valid 16-digit card number", {
-          position: toast.POSITION.TOP_RIGHT,
-          autoClose: 3000,
-        } as ToastOptions);
-        return false;
-      }
-
-      const expiryParts = form.value.expiryDate.split("/");
-      const expiryMonth = parseInt(expiryParts[0]);
-      const expiryYear = parseInt(expiryParts[1]);
+    const validateExpiryDate = (expiryDate: string) => {
+      const [month, year] = expiryDate.split("/").map(Number);
+      if (!month || !year) return false;
       const today = new Date();
-      const isValidExpiry =
-        expiryYear > today.getFullYear() % 100 ||
-        (expiryYear === today.getFullYear() % 100 &&
-          expiryMonth > today.getMonth() + 1);
-      if (!isValidExpiry) {
-        toast.error("Please enter a valid future expiry date", {
-          position: toast.POSITION.TOP_RIGHT,
-          autoClose: 3000,
-        } as ToastOptions);
-        return false;
-      }
+      const expiry = new Date(`20${year}-${month}-01`);
+      return expiry > today;
+    };
 
+    const validateCardDetails = () => {
       if (form.value.setAsDefault) {
         const defaultCard = props.existingCards.find(
           (card: Card) => card.cardType === form.value.cardType && card.default
@@ -169,11 +170,11 @@ export default defineComponent({
           return false;
         }
       }
-
       return true;
     };
 
     const submitCardDetails = () => {
+      const formRef = ref(null);
       if (isValid.value && validateCardDetails()) {
         const newCard: Card = {
           id: generateUniqueId(),
@@ -211,6 +212,7 @@ export default defineComponent({
       localDialogOpen,
       closeDialog,
       submitCardDetails,
+      validateExpiryDate,
     };
   },
 });
